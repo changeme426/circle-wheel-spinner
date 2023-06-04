@@ -5,15 +5,15 @@ function Circle(props) {
   const centerX = 200;
   const centerY = 200;
   const radius = 185;
-  let angleDiff = (2 * Math.PI * props.odd) / 100.0;
-  let startAngle = 0;
-  let endAngle = angleDiff;
+  const angleDiff = props.angleDiff;
+  const startAngle = props.startAngle;
+
   const sensitive = 1;
 
   function drawCircle(ctx) {
     clearCanvas(ctx);
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+    ctx.arc(centerX, centerY, radius, startAngle, startAngle + angleDiff);
     ctx.lineWidth = 11;
     ctx.strokeStyle = "#3d9d43";
     ctx.stroke();
@@ -24,9 +24,9 @@ function Circle(props) {
   }
 
   useEffect(() => {
-    angleDiff = (2 * Math.PI * props.odd) / 100.0;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+
     let isDragging = false;
 
     function handleMouseDown(event) {
@@ -41,9 +41,7 @@ function Circle(props) {
         const dx = mouseX - centerX;
         const dy = mouseY - centerY;
         const angle = Math.atan2(dy, dx);
-        startAngle = angle - angleDiff / 2;
-        endAngle = angle + angleDiff / 2;
-        drawCircle(ctx);
+        props.changeAngle(angle - angleDiff / 2);
       }
     }
 
@@ -61,7 +59,14 @@ function Circle(props) {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [props.odd]);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    drawCircle(ctx);
+  }, [props]);
 
   return (
     <canvas

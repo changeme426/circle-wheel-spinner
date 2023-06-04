@@ -21,14 +21,42 @@ function App() {
   const [angle, setAngle] = useState(0);
   let intervalId;
   const [maxAngle, setMaxAngle] = useState(1000);
+  const [angleDiff, setAngleDiff] = useState((2 * Math.PI * odd) / 100.0);
+  const [startAngle, setStartAngle] = useState(0);
+  const [canShowResult, setCanShowResult] = useState(false);
 
   const startSpin = () => {
     if (spinning) return;
 
     setAngle(0);
     setMaxAngle(Math.floor(Math.random() * 360) + 1000);
+    setCanShowResult(true);
 
     setSpinning(true);
+  };
+
+  const showResult = () => {
+    let stop = (angle - 90) % 360;
+    let start = ((startAngle * 180) / Math.PI) % 360;
+    let end = (((startAngle + angleDiff) * 180) / Math.PI) % 360;
+    if (stop < 0) stop = stop + 360;
+    if (start < 0) start = start + 360;
+    if (end < 0) end = end + 360;
+
+    let win = false;
+    if (start <= end) {
+      if (stop >= start && stop <= end) {
+        win = true;
+      }
+    } else {
+      if (stop >= start || stop <= end) {
+        win = true;
+      }
+    }
+
+    setTimeout(() => {
+      if (canShowResult) alert(win);
+    }, 20);
   };
 
   useEffect(() => {
@@ -37,6 +65,7 @@ function App() {
         setAngle((angle) => angle + 10);
       }, 10);
     } else {
+      showResult();
       clearInterval(intervalId);
     }
 
@@ -48,6 +77,14 @@ function App() {
       setSpinning(false);
     }
   }, [angle, maxAngle]);
+
+  useEffect(() => {
+    setAngleDiff((2 * Math.PI * odd) / 100.0);
+  }, [odd]);
+
+  const changeAngle = (startAngle) => {
+    setStartAngle(startAngle);
+  };
 
   return (
     <div className="flex flex-col justify-center items-center px-8">
@@ -70,7 +107,11 @@ function App() {
           />
           <div className="text-lg font-bold">${price.toFixed(2)}</div>
         </div>
-        <Circle odd={odd} />
+        <Circle
+          angleDiff={angleDiff}
+          startAngle={startAngle}
+          changeAngle={changeAngle}
+        />
         <Spinner angle={angle} />
       </div>
 
